@@ -13,7 +13,8 @@ interface AppState {
   searchTerm: string;
   results: Array<ResultItem> | SingleResult;
   isLoading: boolean;
-  error: boolean;
+  error?: boolean;
+  hasError: boolean;
 }
 
 class App extends React.Component<
@@ -27,7 +28,7 @@ class App extends React.Component<
       searchTerm: storedSearchTerm || '',
       results: [],
       isLoading: false,
-      error: false,
+      hasError: false,
     };
   }
 
@@ -43,6 +44,10 @@ class App extends React.Component<
     }
   }
 
+  componentDidUpdate() {
+    if (this.state.error) throw new Error('This is an error');
+  }
+
   handleChange = (event: React.ChangeEvent<HTMLInputElement>) =>
     this.setState({ searchTerm: event.target.value }, () => {
       localStorage.setItem('searchTerm', event.target.value);
@@ -50,7 +55,7 @@ class App extends React.Component<
 
   fetchData = async () => {
     this.setState({ isLoading: true });
-    this.setState({ error: false });
+    this.setState({ hasError: false });
 
     try {
       let urlBase = `${BASE_URL}`;
@@ -74,7 +79,7 @@ class App extends React.Component<
       this.setState({ results, isLoading: false });
     } catch (error) {
       console.error('Failed to fetch data:', error);
-      this.setState({ isLoading: false, error: true });
+      this.setState({ isLoading: false, hasError: true });
     }
   };
 
@@ -101,12 +106,17 @@ class App extends React.Component<
             searchTerm={this.state.searchTerm}
           />
           <SearchButton onClick={this.handleClick} />
-          <button className="errorButton" onClick={this.handleClickError}>
+          <button
+            className="errorButton"
+            onClick={() => {
+              this.setState({ error: true });
+            }}
+          >
             Trigger Error
           </button>
         </div>
 
-        {this.state.error ? (
+        {this.state.hasError ? (
           <div className="errorMessage">No results found</div>
         ) : this.state.isLoading ? (
           <div className="spinner-container">
