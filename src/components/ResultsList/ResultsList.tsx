@@ -1,9 +1,20 @@
-import React, { Component } from 'react';
-import './style.scss';
-interface ResultItem {
+import React, { useState } from 'react';
+
+export interface ResultItem {
   name: string;
   url: string;
-  abilities?: {
+  abilities: {
+    ability: {
+      name: string;
+      url: string;
+    };
+  }[];
+}
+
+export interface SingleResult {
+  name: string;
+  url?: string;
+  abilities: {
     ability: {
       name: string;
       url: string;
@@ -12,40 +23,39 @@ interface ResultItem {
 }
 
 interface ResultsListProps {
-  results: Array<ResultItem>;
+  results: Array<ResultItem> | SingleResult;
 }
 
-class ResultsList extends React.Component<ResultsListProps> {
-  render() {
-    const { results } = this.props;
+const ResultsList: React.FC<ResultsListProps> = ({ results }) => {
+  const [searchTerm] = useState(localStorage.getItem('searchTerm'));
 
-    const searchTerm = localStorage.getItem('searchTerm');
+  const displayedResults = Array.isArray(results) ? results : [results];
 
-    if (!searchTerm) {
-      return (
+  return (
+    <>
+      {!searchTerm ? (
         <ul>
-          {results.map((result, index) => (
+          {displayedResults.map((result, index) => (
             <li key={index}>
               {result.name} - {result.url}
             </li>
           ))}
         </ul>
-      );
-    } else {
-      return (
+      ) : (
         <>
-          <p className="pokemon-name">{results?.name}</p>
+          <p className="pokemon-name">{displayedResults[0]?.name}</p>
           <ul>
-            {results.abilities?.map((ability, index) => (
-              <li key={index}>
-                {ability.ability.name} - {ability.ability.url}
-              </li>
-            ))}
+            {displayedResults[0] &&
+              displayedResults[0].abilities?.map((ability, idx) => (
+                <li key={idx}>
+                  {ability.ability?.name} - {ability.ability?.url}
+                </li>
+              ))}
           </ul>
         </>
-      );
-    }
-  }
-}
+      )}
+    </>
+  );
+};
 
 export default ResultsList;

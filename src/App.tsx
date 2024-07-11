@@ -17,8 +17,11 @@ interface AppState {
   hasError: boolean;
 }
 
-class App extends React.Component<{ children?: ReactNode }, AppState> {
-  constructor(props: PropsWithChildren<{}>) {
+class App extends React.Component<
+  PropsWithChildren<{ children?: ReactNode }>,
+  AppState
+> {
+  constructor(props: PropsWithChildren<{ children?: ReactNode }>) {
     super(props);
     const storedSearchTerm = localStorage.getItem('searchTerm');
     this.state = {
@@ -41,13 +44,10 @@ class App extends React.Component<{ children?: ReactNode }, AppState> {
     }
   }
 
-  handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const { value } = event.target;
-
-    this.setState({ searchTerm: value }, () => {
-      localStorage.setItem('searchTerm', value);
+  handleChange = (event: React.ChangeEvent<HTMLInputElement>) =>
+    this.setState({ searchTerm: event.target.value }, () => {
+      localStorage.setItem('searchTerm', event.target.value);
     });
-  };
 
   fetchData = async () => {
     this.setState({ isLoading: true });
@@ -72,11 +72,10 @@ class App extends React.Component<{ children?: ReactNode }, AppState> {
         results = data || [];
       }
 
-      this.setState({ results: results, isLoading: false });
+      this.setState({ results, isLoading: false });
     } catch (error) {
       console.error('Failed to fetch data:', error);
-      this.setState({ isLoading: false });
-      this.setState({ hasError: true });
+      this.setState({ isLoading: false, hasError: true });
     }
   };
 

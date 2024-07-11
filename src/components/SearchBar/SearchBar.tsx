@@ -1,8 +1,9 @@
 import React, { Component } from 'react';
-import './SearchBar.css'
+import './SearchBar.css';
 
 interface SearchBarProps {
   onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  searchTerm: string;
 }
 
 class SearchBar extends React.Component<SearchBarProps> {
@@ -12,9 +13,15 @@ class SearchBar extends React.Component<SearchBarProps> {
 
   render() {
     return (
-      <input type="text" placeholder="Search..." onChange={this.handleChange} className='search-input' />
+      <input
+        type="text"
+        placeholder="Search..."
+        onChange={this.handleChange}
+        className="search-input"
+        value={this.props.searchTerm}
+      />
     );
   }
 }
 
-export default SearchBar
+export default SearchBar;
