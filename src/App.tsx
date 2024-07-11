@@ -1,90 +1,115 @@
 import './App.css';
-import React from 'react';
+import React, { PropsWithChildren, ReactNode } from 'react';
 import ErrorBoundary from './components/ErrorBoundary/ErrorBoundary';
 import SearchBar from './components/SearchBar/SearchBar';
-import ResultsList from './components/ResultsList/ResultsList';
+import ResultsList, {
+  ResultItem,
+  SingleResult,
+} from './components/ResultsList/ResultsList';
 import { BASE_URL } from './constants';
 import SearchButton from './components/SearchButton/SearchButton';
 import Spinner from './components/Spinner/Spinner';
 
 interface AppState {
   searchTerm: string;
-  results: Array<{ name: string; url: string }>;
+  results: Array<ResultItem> | SingleResult;
   isLoading: boolean;
+  hasError: boolean;
 }
 
-class App extends React.Component<{}, AppState> {
-  constructor(props: {}) {
+class App extends React.Component<{ children?: ReactNode }, AppState> {
+  constructor(props: PropsWithChildren<{}>) {
     super(props);
+    const storedSearchTerm = localStorage.getItem('searchTerm');
     this.state = {
-      searchTerm: '',
+      searchTerm: storedSearchTerm || '',
       results: [],
-      isLoading: false
+      isLoading: false,
+      hasError: false,
     };
   }
 
   componentDidMount() {
     this.setState({ isLoading: true });
+
     const storedTerm = localStorage.getItem('searchTerm');
+
     if (storedTerm) {
       this.setState({ searchTerm: storedTerm || '' }, () => this.fetchData());
     } else {
-      this.fetchData(); 
+      this.fetchData();
     }
   }
 
   handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { value } = event.target;
-    this.setState({ searchTerm: value }, () => {   
+
+    this.setState({ searchTerm: value }, () => {
       localStorage.setItem('searchTerm', value);
     });
   };
-  
+
   fetchData = async () => {
-    this.setState({isLoading: true})
+    this.setState({ isLoading: true });
+    this.setState({ hasError: false });
+
     try {
-  
-      let urlBase = `${BASE_URL}/pokemon/?limit=10&offset=0`;
-      if (this.state.searchTerm) {     
-        urlBase += `&query=${encodeURIComponent(this.state.searchTerm)}`;
+      let urlBase = `${BASE_URL}`;
+      if (this.state.searchTerm) {
+        urlBase += `/pokemon/${this.state.searchTerm}`;
+      } else {
+        urlBase += `/pokemon/?limit=10&offset=0`;
       }
-  
+
       const response = await fetch(urlBase);
       const data = await response.json();
-  
-      this.setState({ results: data.results, isLoading: false });
+
+      let results = [];
+
+      if (!this.state.searchTerm) {
+        results = data.results || [];
+      } else {
+        results = data || [];
+      }
+
+      this.setState({ results: results, isLoading: false });
     } catch (error) {
-      console.error("Failed to fetch data:", error);
-      this.setState({ isLoading: false }); 
+      console.error('Failed to fetch data:', error);
+      this.setState({ isLoading: false });
+      this.setState({ hasError: true });
     }
   };
 
+  handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
 
+    const trimmedSearchTerm = this.state.searchTerm.trim();
+    this.setState({ searchTerm: trimmedSearchTerm }, () => {
+      localStorage.setItem('searchTerm', trimmedSearchTerm);
+      this.fetchData();
+    });
+  };
 
- handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-  event.preventDefault(); 
-
-  const trimmedSearchTerm = this.state.searchTerm.trim();
-  this.setState({ searchTerm: trimmedSearchTerm }, () => {
-    localStorage.setItem('searchTerm', trimmedSearchTerm);
-    this.fetchData();
-  });
-};
-
-  render() {  
+  render() {
     return (
       <ErrorBoundary>
         <div className="app">
-          <div className='search-container'> <SearchBar onChange={this.handleChange} />
-          <SearchButton onClick={this.handleClick}/></div>
-         
-      
-          {this.state.isLoading ? (
-         <div className="spinner-container">
-         <Spinner />
-       </div>
+          <div className="search-container">
+            <SearchBar
+              onChange={this.handleChange}
+              searchTerm={this.state.searchTerm}
+            />
+            <SearchButton onClick={this.handleClick} />
+          </div>
+
+          {this.state.hasError ? (
+            <div className="errorMessage">No results found</div>
+          ) : this.state.isLoading ? (
+            <div className="spinner-container">
+              <Spinner />
+            </div>
           ) : (
-            <ResultsList results={this.state.results}/>
+            <ResultsList results={this.state.results} />
           )}
         </div>
       </ErrorBoundary>
