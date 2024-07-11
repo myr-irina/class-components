@@ -1,6 +1,5 @@
 import './App.css';
 import React, { PropsWithChildren, ReactNode } from 'react';
-import ErrorBoundary from './components/ErrorBoundary/ErrorBoundary';
 import SearchBar from './components/SearchBar/SearchBar';
 import ResultsList, {
   ResultItem,
@@ -14,7 +13,7 @@ interface AppState {
   searchTerm: string;
   results: Array<ResultItem> | SingleResult;
   isLoading: boolean;
-  hasError: boolean;
+  error: boolean;
 }
 
 class App extends React.Component<
@@ -28,7 +27,7 @@ class App extends React.Component<
       searchTerm: storedSearchTerm || '',
       results: [],
       isLoading: false,
-      hasError: false,
+      error: false,
     };
   }
 
@@ -51,7 +50,7 @@ class App extends React.Component<
 
   fetchData = async () => {
     this.setState({ isLoading: true });
-    this.setState({ hasError: false });
+    this.setState({ error: false });
 
     try {
       let urlBase = `${BASE_URL}`;
@@ -75,7 +74,7 @@ class App extends React.Component<
       this.setState({ results, isLoading: false });
     } catch (error) {
       console.error('Failed to fetch data:', error);
-      this.setState({ isLoading: false, hasError: true });
+      this.setState({ isLoading: false, error: true });
     }
   };
 
@@ -89,29 +88,34 @@ class App extends React.Component<
     });
   };
 
+  handleClickError = () => {
+    throw new Error('An error occurred!');
+  };
+
   render() {
     return (
-      <ErrorBoundary>
-        <div className="app">
-          <div className="search-container">
-            <SearchBar
-              onChange={this.handleChange}
-              searchTerm={this.state.searchTerm}
-            />
-            <SearchButton onClick={this.handleClick} />
-          </div>
-
-          {this.state.hasError ? (
-            <div className="errorMessage">No results found</div>
-          ) : this.state.isLoading ? (
-            <div className="spinner-container">
-              <Spinner />
-            </div>
-          ) : (
-            <ResultsList results={this.state.results} />
-          )}
+      <div className="app">
+        <div className="search-container">
+          <SearchBar
+            onChange={this.handleChange}
+            searchTerm={this.state.searchTerm}
+          />
+          <SearchButton onClick={this.handleClick} />
+          <button className="errorButton" onClick={this.handleClickError}>
+            Trigger Error
+          </button>
         </div>
-      </ErrorBoundary>
+
+        {this.state.error ? (
+          <div className="errorMessage">No results found</div>
+        ) : this.state.isLoading ? (
+          <div className="spinner-container">
+            <Spinner />
+          </div>
+        ) : (
+          <ResultsList results={this.state.results} />
+        )}
+      </div>
     );
   }
 }
