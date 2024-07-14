@@ -1,28 +1,13 @@
 import './App.css';
-import React, {
-  PropsWithChildren,
-  ReactNode,
-  useEffect,
-  useState,
-} from 'react';
-import ResultsList, {
-  ResultItem,
-  SingleResult,
-} from './components/ResultsList/ResultsList';
+import React, { useEffect, useState } from 'react';
+import ResultsList from './components/ResultsList/ResultsList';
 import { BASE_URL } from './constants';
 import SearchButton from './components/SearchButton/SearchButton';
 import Spinner from './components/Spinner/Spinner';
 import useLocalStorage from './components/customHooks/useLocalStorage';
 import SearchBar from './components/SearchBar/SearchBar';
 import ErrorBoundary from './components/ErrorBoundary/ErrorBoundary';
-
-interface AppState {
-  searchTerm: string;
-  results: Array<ResultItem> | SingleResult;
-  isLoading: boolean;
-  error?: boolean;
-  hasError: boolean;
-}
+import { useNavigate, useParams } from 'react-router-dom';
 
 function App() {
   const [results, setResults] = useState([]);
@@ -38,30 +23,53 @@ function App() {
   );
   const [simulateError, setSimulateError] = useState(false);
 
+  const { page } = useParams();
+  const navigate = useNavigate();
+
+  const initialCurrentPage = parseInt(page ?? '1', 10) || 1;
+  const [currentPage, setCurrentPage] = useState(initialCurrentPage);
+
   const throwError = () => {
     setSimulateError(true);
     throw new Error('Manual error');
   };
 
   useEffect(() => {
-    fetchData();
+    fetchData(currentPage);
+  }, [currentPage]);
+
+  useEffect(() => {
+    fetchData(currentPage);
   }, []);
+
+  const nextPage = () => {
+    setCurrentPage((current) => current + 1);
+    navigate(`/search/${currentPage}`);
+  };
+
+  const prevPage = () => {
+    setCurrentPage((current) => Math.max(current - 1, 1));
+    navigate(`/search/${currentPage}`);
+  };
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const trimmedValue = event.target.value.trim();
     setSearchQuery(trimmedValue);
   };
 
-  const fetchData = async () => {
+  const fetchData = async (page: number) => {
     setIsLoading(true);
     setError({ isError: false, errorMessage: '' });
+
+    const limit = 10;
+    const offset = (page - 1) * limit;
 
     try {
       let urlBase = `${BASE_URL}`;
       if (searchQuery) {
         urlBase += `/pokemon/${searchQuery}`;
       } else {
-        urlBase += `/pokemon/?limit=10&offset=0`;
+        urlBase += `/pokemon/?limit=${limit}&offset=${offset}`;
       }
 
       const response = await fetch(urlBase);
@@ -97,7 +105,7 @@ function App() {
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
 
-    fetchData();
+    fetchData(currentPage);
   };
 
   if (simulateError) {
@@ -122,7 +130,12 @@ function App() {
             <Spinner />
           </div>
         ) : (
-          <ResultsList results={results} searchQuery={searchQuery} />
+          <ResultsList
+            results={results}
+            searchQuery={searchQuery}
+            nextPage={nextPage}
+            prevPage={prevPage}
+          />
         )}
       </div>
     </ErrorBoundary>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { MouseEventHandler } from 'react';
 
 export interface ResultItem {
   name: string;
@@ -25,21 +25,31 @@ export interface SingleResult {
 interface ResultsListProps {
   results: Array<ResultItem> | SingleResult;
   searchQuery: string;
+  nextPage: MouseEventHandler<HTMLButtonElement>;
+  prevPage: MouseEventHandler<HTMLButtonElement>;
 }
 
-const ResultsList: React.FC<ResultsListProps> = ({ results, searchQuery }) => {
+const ResultsList: React.FC<ResultsListProps> = ({
+  results,
+  prevPage,
+  nextPage,
+}) => {
   const displayedResults = Array.isArray(results) ? results : [results];
 
   return (
     <>
       {Array.isArray(results) ? (
-        <ul>
-          {displayedResults.map((result, index) => (
-            <li key={index}>
-              {result.name} - {result.url}
-            </li>
-          ))}
-        </ul>
+        <>
+          <button onClick={prevPage}>Previous Page</button>
+          <button onClick={nextPage}>Next Page</button>
+          <ul>
+            {displayedResults.map((result, index) => (
+              <li key={index}>
+                {result.name} - {result.url}
+              </li>
+            ))}
+          </ul>
+        </>
       ) : (
         <>
           <p className="pokemon-name">{displayedResults[0]?.name}</p>
