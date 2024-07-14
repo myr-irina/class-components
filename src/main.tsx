@@ -3,14 +3,30 @@ import ReactDOM from 'react-dom/client';
 import App from './App.tsx';
 import './index.css';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import ErrorPage from './components/ErrorPage/ErrorPage.tsx';
+import Layout from './components/Layout/Layout.tsx';
+import Details from './components/Details/Details.tsx';
 
 const router = createBrowserRouter([
   {
-    path: '/search/:page',
+    path: '/',
     element: <App />,
+    children: [
+      {
+        path: 'search/:page',
+        element: <Layout />,
+        errorElement: <ErrorPage />,
+        children: [
+          {
+            path: ':id',
+            element: <Details />,
+            errorElement: <ErrorPage />,
+          },
+        ],
+      },
+    ],
   },
 ]);
-
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <RouterProvider router={router} />

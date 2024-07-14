@@ -38,10 +38,6 @@ function App() {
     fetchData(currentPage);
   }, [currentPage]);
 
-  useEffect(() => {
-    fetchData(currentPage);
-  }, []);
-
   const nextPage = () => {
     setCurrentPage((current) => current + 1);
     navigate(`/search/${currentPage}`);
