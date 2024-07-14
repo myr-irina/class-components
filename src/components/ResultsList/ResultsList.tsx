@@ -1,4 +1,5 @@
 import React, { MouseEventHandler } from 'react';
+import styles from './styles.module.scss';
 
 export interface ResultItem {
   name: string;
@@ -40,8 +41,6 @@ const ResultsList: React.FC<ResultsListProps> = ({
     <>
       {Array.isArray(results) ? (
         <>
-          <button onClick={prevPage}>Previous Page</button>
-          <button onClick={nextPage}>Next Page</button>
           <ul>
             {displayedResults.map((result, index) => (
               <li key={index}>
@@ -49,6 +48,11 @@ const ResultsList: React.FC<ResultsListProps> = ({
               </li>
             ))}
           </ul>
+
+          <div className={styles.buttons}>
+            <button onClick={prevPage}>Previous Page</button>
+            <button onClick={nextPage}>Next Page</button>
+          </div>
         </>
       ) : (
         <>
