@@ -14,6 +14,7 @@ import SearchButton from './components/SearchButton/SearchButton';
 import Spinner from './components/Spinner/Spinner';
 import useLocalStorage from './components/customHooks/useLocalStorage';
 import SearchBar from './components/SearchBar/SearchBar';
+import ErrorBoundary from './components/ErrorBoundary/ErrorBoundary';
 
 interface AppState {
   searchTerm: string;
@@ -26,17 +27,21 @@ interface AppState {
 function App() {
   const [results, setResults] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [hasError, setHasError] = useState(false);
+  const [error, setError] = useState({
+    isError: false,
+    errorMessage: '',
+  });
+
   const [searchQuery, setSearchQuery] = useLocalStorage<string>(
     undefined,
     'searchQuery',
   );
+  const [simulateError, setSimulateError] = useState(false);
 
-  useEffect(() => {
-    if (hasError) {
-      throw new Error('There is an error');
-    }
-  }, []);
+  const throwError = () => {
+    setSimulateError(true);
+    throw new Error('Manual error');
+  };
 
   useEffect(() => {
     fetchData();
@@ -49,7 +54,7 @@ function App() {
 
   const fetchData = async () => {
     setIsLoading(true);
-    setHasError(false);
+    setError({ isError: false, errorMessage: '' });
 
     try {
       let urlBase = `${BASE_URL}`;
@@ -60,14 +65,24 @@ function App() {
       }
 
       const response = await fetch(urlBase);
+
+      if (!response.ok) {
+        if (response.status === 404) {
+          setError({ isError: true, errorMessage: 'No results found' });
+        } else {
+          setError({ isError: true, errorMessage: 'An error occurred' });
+        }
+        return;
+      }
+
       const data = await response.json();
 
-      let results = [];
+      let results;
 
       if (!searchQuery) {
         results = data.results || [];
       } else {
-        results = data || [];
+        results = data || {};
       }
 
       setResults(results);
@@ -75,7 +90,7 @@ function App() {
     } catch (error) {
       console.error('Failed to fetch data:', error);
       setIsLoading(false);
-      setHasError(true);
+      setError({ isError: true, errorMessage: 'An error occurred' });
     }
   };
 
@@ -85,31 +100,32 @@ function App() {
     fetchData();
   };
 
-  return (
-    <div className="app">
-      <div className="search-container">
-        <SearchBar handleChange={handleChange} searchQuery={searchQuery} />
-        <SearchButton handleClick={handleClick} />
-        <button
-          className="errorButton"
-          onClick={() => {
-            setHasError(true);
-          }}
-        >
-          Trigger Error
-        </button>
-      </div>
+  if (simulateError) {
+    return <p>There is an error occured. Try to reload page.</p>;
+  }
 
-      {hasError ? (
-        <div className="errorMessage">No results found</div>
-      ) : isLoading ? (
-        <div className="spinner-container">
-          <Spinner />
+  return (
+    <ErrorBoundary>
+      <div className="app">
+        <div className="search-container">
+          <SearchBar handleChange={handleChange} searchQuery={searchQuery} />
+          <SearchButton handleClick={handleClick} />
+          <button className="errorButton" onClick={throwError}>
+            Trigger Error
+          </button>
         </div>
-      ) : (
-        <ResultsList results={results} searchQuery={searchQuery} />
-      )}
-    </div>
+
+        {error.isError ? (
+          <div className="errorMessage">No results found</div>
+        ) : isLoading ? (
+          <div className="spinner-container">
+            <Spinner />
+          </div>
+        ) : (
+          <ResultsList results={results} searchQuery={searchQuery} />
+        )}
+      </div>
+    </ErrorBoundary>
   );
 }
 
