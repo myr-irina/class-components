@@ -20,7 +20,7 @@ function useLocalStorage<T extends string>(
 
   useEffect(() => {
     localStorage.setItem(key, JSON.stringify(value));
-  }, [value]);
+  }, [value, key]);
 
   return [value, setValue];
 }
