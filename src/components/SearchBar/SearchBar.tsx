@@ -2,22 +2,18 @@ import React from 'react';
 import './SearchBar.css';
 
 interface SearchBarProps {
-  onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  handleChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
   searchQuery: string;
 }
 
-function SearchBar({ onChange, searchQuery }: SearchBarProps) {
-  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    onChange(event);
-  };
-
+function SearchBar({ handleChange, searchQuery }: SearchBarProps) {
   return (
     <input
       type="text"
-      placeholder="Search..."
+      placeholder="Search by name..."
       onChange={handleChange}
       className="search-input"
-      value={searchQuery}
+      // value={searchQuery}
     />
   );
 }

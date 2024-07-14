@@ -5,7 +5,6 @@ import React, {
   useEffect,
   useState,
 } from 'react';
-import SearchBar from './components/SearchBar/SearchBar';
 import ResultsList, {
   ResultItem,
   SingleResult,
@@ -14,6 +13,7 @@ import { BASE_URL } from './constants';
 import SearchButton from './components/SearchButton/SearchButton';
 import Spinner from './components/Spinner/Spinner';
 import useLocalStorage from './components/customHooks/useLocalStorage';
+import SearchBar from './components/SearchBar/SearchBar';
 
 interface AppState {
   searchTerm: string;
@@ -27,7 +27,10 @@ function App() {
   const [results, setResults] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [hasError, setHasError] = useState(false);
-  const [searchQuery, setSearchQuery] = useLocalStorage<string>('searchQuery');
+  const [searchQuery, setSearchQuery] = useLocalStorage<string>(
+    undefined,
+    'searchQuery',
+  );
 
   useEffect(() => {
     if (hasError) {
@@ -85,7 +88,7 @@ function App() {
   return (
     <div className="app">
       <div className="search-container">
-        <SearchBar onChange={handleChange} searchQuery={searchQuery} />
+        <SearchBar handleChange={handleChange} searchQuery={searchQuery} />
         <SearchButton handleClick={handleClick} />
         <button
           className="errorButton"

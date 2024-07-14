@@ -32,7 +32,7 @@ const ResultsList: React.FC<ResultsListProps> = ({ results, searchQuery }) => {
 
   return (
     <>
-      {!searchQuery ? (
+      {Array.isArray(results) ? (
         <ul>
           {displayedResults.map((result, index) => (
             <li key={index}>

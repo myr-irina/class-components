@@ -2,27 +2,27 @@ import { useEffect, useState } from 'react';
 
 type LocalStorageState<T extends string> = [T, (value: T) => void];
 
-function useLocalStorage<T extends string>(key: string): LocalStorageState<T> {
-  const initialState: T = '' as T;
+function useLocalStorage<T extends string>(
+  initialValue = undefined,
+  key: string,
+): LocalStorageState<T> {
+  const getValue = () => {
+    const storage = localStorage.getItem(key);
 
-  const [searchQuery, setSearchQuery] = useState<T>(initialState);
-
-  useEffect(() => {
-    const savedSearchQuery = localStorage.getItem(key);
-    if (savedSearchQuery) {
-      setSearchQuery(savedSearchQuery as unknown as T);
-    } else {
-      setSearchQuery(initialState);
+    if (storage) {
+      return JSON.parse(storage);
     }
-  }, []);
+
+    return initialValue;
+  };
+
+  const [value, setValue] = useState(getValue);
 
   useEffect(() => {
-    return () => {
-      localStorage.setItem(key, searchQuery);
-    };
-  }, [searchQuery]);
+    localStorage.setItem(key, JSON.stringify(value));
+  }, [value]);
 
-  return [searchQuery, setSearchQuery];
+  return [value, setValue];
 }
 
 export default useLocalStorage;
