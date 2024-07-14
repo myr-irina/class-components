@@ -1,5 +1,10 @@
 import './App.css';
-import React, { PropsWithChildren, ReactNode, useState } from 'react';
+import React, {
+  PropsWithChildren,
+  ReactNode,
+  useEffect,
+  useState,
+} from 'react';
 import SearchBar from './components/SearchBar/SearchBar';
 import ResultsList, {
   ResultItem,
@@ -19,42 +24,26 @@ interface AppState {
 }
 
 function App() {
-  // constructor(props: PropsWithChildren<{ children?: ReactNode }>) {
-  //   super(props);
-  //   const storedSearchTerm = localStorage.getItem('searchTerm');
-  //   this.state = {
-  //     searchTerm: storedSearchTerm || '',
-  //     results: [],
-  //     isLoading: false,
-  //     hasError: false,
-  //   };
-  // }
-
   const [results, setResults] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [hasError, setHasError] = useState(false);
   const [searchQuery, setSearchQuery] = useLocalStorage<string>('searchQuery');
 
-  // componentDidMount() {
-  //   this.setState({ isLoading: true });
+  useEffect(() => {
+    if (hasError) {
+      throw new Error('There is an error');
+    }
+  }, []);
 
-  //   const storedTerm = localStorage.getItem('searchTerm');
-
-  //   if (storedTerm) {
-  //     this.setState({ searchTerm: storedTerm || '' }, () => this.fetchData());
-  //   } else {
-  //     this.fetchData();
-  //   }
-  // }
-
-  // componentDidUpdate() {
-  //   if (this.state.error) throw new Error('This is an error');
-  // }
+  useEffect(() => {
+    fetchData();
+  }, []);
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const trimmedValue = event.target.value.trim();
     setSearchQuery(trimmedValue);
   };
+
   const fetchData = async () => {
     setIsLoading(true);
     setHasError(false);
@@ -72,16 +61,18 @@ function App() {
 
       let results = [];
 
-      if (!this.state.searchTerm) {
+      if (!searchQuery) {
         results = data.results || [];
       } else {
         results = data || [];
       }
 
-      this.setState({ results, isLoading: false });
+      setResults(results);
+      setIsLoading(false);
     } catch (error) {
       console.error('Failed to fetch data:', error);
-      this.setState({ isLoading: false, hasError: true });
+      setIsLoading(false);
+      setHasError(true);
     }
   };
 
@@ -113,7 +104,7 @@ function App() {
           <Spinner />
         </div>
       ) : (
-        <ResultsList results={results} />
+        <ResultsList results={results} searchQuery={searchQuery} />
       )}
     </div>
   );

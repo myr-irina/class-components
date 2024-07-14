@@ -24,16 +24,15 @@ export interface SingleResult {
 
 interface ResultsListProps {
   results: Array<ResultItem> | SingleResult;
+  searchQuery: string;
 }
 
-const ResultsList: React.FC<ResultsListProps> = ({ results }) => {
-  const [searchTerm] = useState(localStorage.getItem('searchTerm'));
-
+const ResultsList: React.FC<ResultsListProps> = ({ results, searchQuery }) => {
   const displayedResults = Array.isArray(results) ? results : [results];
 
   return (
     <>
-      {!searchTerm ? (
+      {!searchQuery ? (
         <ul>
           {displayedResults.map((result, index) => (
             <li key={index}>
