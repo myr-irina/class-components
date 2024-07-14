@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 type LocalStorageState<T extends string> = [T, (value: T) => void];
 
 function useLocalStorage<T extends string>(
-  initialValue = undefined,
+  initialValue = '',
   key: string,
 ): LocalStorageState<T> {
   const getValue = () => {
