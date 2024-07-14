@@ -1,22 +1,28 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 
-function useLocalStorage() {
-  const [searchQuery, setsearchQuery] = useState('');
+type LocalStorageState<T extends string> = [T, (value: T) => void];
+
+function useLocalStorage<T extends string>(key: string): LocalStorageState<T> {
+  const initialState: T = '' as T;
+
+  const [searchQuery, setSearchQuery] = useState<T>(initialState);
 
   useEffect(() => {
-    const savedSearchQuery = localStorage.getItem('searhQuery');
+    const savedSearchQuery = localStorage.getItem(key);
     if (savedSearchQuery) {
-      setsearchQuery(savedSearchQuery);
+      setSearchQuery(savedSearchQuery as unknown as T);
     } else {
-      setsearchQuery('');
+      setSearchQuery(initialState);
     }
   }, []);
 
   useEffect(() => {
     return () => {
-      localStorage.setItem('searchQuery', searchQuery);
+      localStorage.setItem(key, searchQuery);
     };
   }, [searchQuery]);
+
+  return [searchQuery, setSearchQuery];
 }
 
 export default useLocalStorage;

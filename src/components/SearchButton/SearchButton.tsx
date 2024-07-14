@@ -1,11 +1,11 @@
 import React from 'react';
 
 interface SearchButtonProps {
-  onClick: (event: React.MouseEvent<HTMLButtonElement>) => void;
+  handleClick: (event: React.MouseEvent<HTMLButtonElement>) => void;
 }
 
-const SearchButton: React.FC<SearchButtonProps> = ({ onClick }) => {
-  return <button onClick={onClick}>Search</button>;
+const SearchButton: React.FC<SearchButtonProps> = ({ handleClick }) => {
+  return <button onClick={handleClick}>Search</button>;
 };
 
 export default SearchButton;

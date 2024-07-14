@@ -1,5 +1,5 @@
 import './App.css';
-import React, { PropsWithChildren, ReactNode } from 'react';
+import React, { PropsWithChildren, ReactNode, useState } from 'react';
 import SearchBar from './components/SearchBar/SearchBar';
 import ResultsList, {
   ResultItem,
@@ -8,6 +8,7 @@ import ResultsList, {
 import { BASE_URL } from './constants';
 import SearchButton from './components/SearchButton/SearchButton';
 import Spinner from './components/Spinner/Spinner';
+import useLocalStorage from './components/customHooks/useLocalStorage';
 
 interface AppState {
   searchTerm: string;
@@ -17,50 +18,51 @@ interface AppState {
   hasError: boolean;
 }
 
-class App extends React.Component<
-  PropsWithChildren<{ children?: ReactNode }>,
-  AppState
-> {
-  constructor(props: PropsWithChildren<{ children?: ReactNode }>) {
-    super(props);
-    const storedSearchTerm = localStorage.getItem('searchTerm');
-    this.state = {
-      searchTerm: storedSearchTerm || '',
-      results: [],
-      isLoading: false,
-      hasError: false,
-    };
-  }
+function App() {
+  // constructor(props: PropsWithChildren<{ children?: ReactNode }>) {
+  //   super(props);
+  //   const storedSearchTerm = localStorage.getItem('searchTerm');
+  //   this.state = {
+  //     searchTerm: storedSearchTerm || '',
+  //     results: [],
+  //     isLoading: false,
+  //     hasError: false,
+  //   };
+  // }
 
-  componentDidMount() {
-    this.setState({ isLoading: true });
+  const [results, setResults] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [hasError, setHasError] = useState(false);
+  const [searchQuery, setSearchQuery] = useLocalStorage<string>('searchQuery');
 
-    const storedTerm = localStorage.getItem('searchTerm');
+  // componentDidMount() {
+  //   this.setState({ isLoading: true });
 
-    if (storedTerm) {
-      this.setState({ searchTerm: storedTerm || '' }, () => this.fetchData());
-    } else {
-      this.fetchData();
-    }
-  }
+  //   const storedTerm = localStorage.getItem('searchTerm');
 
-  componentDidUpdate() {
-    if (this.state.error) throw new Error('This is an error');
-  }
+  //   if (storedTerm) {
+  //     this.setState({ searchTerm: storedTerm || '' }, () => this.fetchData());
+  //   } else {
+  //     this.fetchData();
+  //   }
+  // }
 
-  handleChange = (event: React.ChangeEvent<HTMLInputElement>) =>
-    this.setState({ searchTerm: event.target.value }, () => {
-      localStorage.setItem('searchTerm', event.target.value);
-    });
+  // componentDidUpdate() {
+  //   if (this.state.error) throw new Error('This is an error');
+  // }
 
-  fetchData = async () => {
-    this.setState({ isLoading: true });
-    this.setState({ hasError: false });
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const trimmedValue = event.target.value.trim();
+    setSearchQuery(trimmedValue);
+  };
+  const fetchData = async () => {
+    setIsLoading(true);
+    setHasError(false);
 
     try {
       let urlBase = `${BASE_URL}`;
-      if (this.state.searchTerm) {
-        urlBase += `/pokemon/${this.state.searchTerm}`;
+      if (searchQuery) {
+        urlBase += `/pokemon/${searchQuery}`;
       } else {
         urlBase += `/pokemon/?limit=10&offset=0`;
       }
@@ -83,51 +85,38 @@ class App extends React.Component<
     }
   };
 
-  handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+  const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
 
-    const trimmedSearchTerm = this.state.searchTerm.trim();
-    this.setState({ searchTerm: trimmedSearchTerm }, () => {
-      localStorage.setItem('searchTerm', trimmedSearchTerm);
-      this.fetchData();
-    });
+    fetchData();
   };
 
-  handleClickError = () => {
-    throw new Error('An error occurred!');
-  };
-
-  render() {
-    return (
-      <div className="app">
-        <div className="search-container">
-          <SearchBar
-            onChange={this.handleChange}
-            searchTerm={this.state.searchTerm}
-          />
-          <SearchButton onClick={this.handleClick} />
-          <button
-            className="errorButton"
-            onClick={() => {
-              this.setState({ error: true });
-            }}
-          >
-            Trigger Error
-          </button>
-        </div>
-
-        {this.state.hasError ? (
-          <div className="errorMessage">No results found</div>
-        ) : this.state.isLoading ? (
-          <div className="spinner-container">
-            <Spinner />
-          </div>
-        ) : (
-          <ResultsList results={this.state.results} />
-        )}
+  return (
+    <div className="app">
+      <div className="search-container">
+        <SearchBar onChange={handleChange} searchQuery={searchQuery} />
+        <SearchButton handleClick={handleClick} />
+        <button
+          className="errorButton"
+          onClick={() => {
+            setHasError(true);
+          }}
+        >
+          Trigger Error
+        </button>
       </div>
-    );
-  }
+
+      {hasError ? (
+        <div className="errorMessage">No results found</div>
+      ) : isLoading ? (
+        <div className="spinner-container">
+          <Spinner />
+        </div>
+      ) : (
+        <ResultsList results={results} />
+      )}
+    </div>
+  );
 }
 
 export default App;
