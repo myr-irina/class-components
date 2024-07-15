@@ -13,7 +13,7 @@ function SearchBar({ handleChange, searchQuery }: SearchBarProps) {
       placeholder="Search by name..."
       onChange={handleChange}
       className="search-input"
-      // value={searchQuery}
+      value={searchQuery}
     />
   );
 }

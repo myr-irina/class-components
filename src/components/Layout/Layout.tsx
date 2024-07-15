@@ -5,15 +5,16 @@ const Layout = () => {
   const { id } = useParams<{ id: string }>();
 
   return (
-    <div style={{ display: 'flex' }}>
-      <div style={{ flex: 1 }}>
+    <div id="layout" style={{ display: 'flex', gap: '10px', height: '100vh' }}>
+      <div
+        id="search-results"
+        style={{ width: '50%', borderRight: '1px solid #ccc' }}
+      >
         <Outlet />
       </div>
-      {id && (
-        <div style={{ flex: 1 }}>
-          <Details />
-        </div>
-      )}
+      <div id="details" style={{ width: '50%' }}>
+        {id && <Details />}
+      </div>
     </div>
   );
 };

@@ -62,7 +62,7 @@ const ResultsList: React.FC<ResultsListProps> = ({
             {displayedResults[0] &&
               displayedResults[0].abilities?.map((ability, idx) => (
                 <li key={idx}>
-                  <Link to="/search/1/1">
+                  <Link to="/search/1/3">
                     {ability.ability?.name} - {ability.ability?.url}
                   </Link>
                 </li>
