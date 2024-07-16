@@ -1,5 +1,4 @@
 import React, { MouseEventHandler } from 'react';
-import styles from './styles.module.scss';
 import { Link } from 'react-router-dom';
 
 export interface ResultItem {
@@ -31,11 +30,7 @@ interface ResultsListProps {
   prevPage: MouseEventHandler<HTMLButtonElement>;
 }
 
-const ResultsList: React.FC<ResultsListProps> = ({
-  results,
-  prevPage,
-  nextPage,
-}) => {
+const ResultsList: React.FC<ResultsListProps> = ({ results }) => {
   const displayedResults = Array.isArray(results) ? results : [results];
 
   return (
@@ -49,11 +44,6 @@ const ResultsList: React.FC<ResultsListProps> = ({
               </li>
             ))}
           </ul>
-
-          <div className={styles.buttons}>
-            <button onClick={prevPage}>Previous Page</button>
-            <button onClick={nextPage}>Next Page</button>
-          </div>
         </>
       ) : (
         <>

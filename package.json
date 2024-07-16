@@ -21,6 +21,9 @@
     "*.{ts,tsx}": "npx eslint",
     "*.{ts,tsx,html,css}": "npx prettier --check"
   },
+  "resolutions": {
+    "@types/react": "^17.0.0"
+  },
   "dependencies": {
     "@types/react": "^18.3.3",
     "eslint-plugin-react-compiler": "^0.0.0-experimental-0998c1e-20240625",

@@ -7,7 +7,9 @@ import Spinner from './components/Spinner/Spinner';
 import useLocalStorage from './components/customHooks/useLocalStorage';
 import SearchBar from './components/SearchBar/SearchBar';
 import ErrorBoundary from './components/ErrorBoundary/ErrorBoundary';
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import PaginationControls from './components/PaginationControls/PaginationControls';
+import { ITEMS_PER_PAGE } from './constants';
 
 function App() {
   const [results, setResults] = useState([]);
@@ -27,6 +29,8 @@ function App() {
 
   const [searchParams, setSearchParams] = useSearchParams();
 
+  const [totalPages, setTotalPages] = useState(0);
+
   const throwError = () => {
     setSimulateError(true);
     throw new Error('Manual error');
@@ -38,23 +42,27 @@ function App() {
     }
 
     const currentPage = parseInt(searchParams.get('page') ?? '1', 10);
-    fetchData(currentPage);
+    fetchData(currentPage, setTotalPages);
   }, [searchParams]);
 
   const nextPage = () => {
     const nextPageNumber = parseInt(searchParams.get('page') ?? '1', 10) + 1;
-    const newSearchParams = new URLSearchParams(searchParams.toString());
-    newSearchParams.set('page', String(nextPageNumber));
+    if (nextPageNumber > 0) {
+      const newSearchParams = new URLSearchParams(searchParams.toString());
+      newSearchParams.set('page', String(nextPageNumber));
 
-    navigate(`/?${newSearchParams.toString()}`, { replace: true });
+      navigate(`/?${newSearchParams.toString()}`, { replace: true });
+    }
   };
 
   const prevPage = () => {
     const prevPageNumber = parseInt(searchParams.get('page') ?? '1', 10) - 1;
-    const newSearchParams = new URLSearchParams(searchParams.toString());
-    newSearchParams.set('page', prevPageNumber.toString());
+    if (prevPageNumber > 0) {
+      const newSearchParams = new URLSearchParams(searchParams.toString());
+      newSearchParams.set('page', prevPageNumber.toString());
 
-    navigate(`/?${newSearchParams.toString()}`, { replace: true });
+      navigate(`/?${newSearchParams.toString()}`, { replace: true });
+    }
   };
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -62,7 +70,10 @@ function App() {
     setSearchQuery(trimmedValue);
   };
 
-  const fetchData = async (page: number) => {
+  const fetchData = async (
+    page: number,
+    setPageCount: (count: number) => void,
+  ) => {
     setIsLoading(true);
     setError({ isError: false, errorMessage: '' });
 
@@ -98,6 +109,10 @@ function App() {
         results = data || {};
       }
 
+      const totalCount = data.count || 0;
+      const pageCount = Math.ceil(totalCount / ITEMS_PER_PAGE);
+      setPageCount(pageCount);
+
       setResults(results);
       setIsLoading(false);
     } catch (error) {
@@ -111,12 +126,14 @@ function App() {
     event.preventDefault();
 
     const currentPage = parseInt(searchParams.get('page') ?? '1', 10);
-    fetchData(currentPage);
+    fetchData(currentPage, (pageCount) => setTotalPages(pageCount));
   };
 
   if (simulateError) {
     return <p>There is an error occured. Try to reload page.</p>;
   }
+
+  const currentPage = parseInt(searchParams.get('page') ?? '1', 10);
 
   return (
     <ErrorBoundary>
@@ -143,6 +160,14 @@ function App() {
             prevPage={prevPage}
           />
         )}
+
+        <PaginationControls
+          currentPage={currentPage}
+          prevPage={prevPage}
+          nextPage={nextPage}
+          totalPages={totalPages}
+          initialPagesToShow={5}
+        />
       </div>
     </ErrorBoundary>
   );
