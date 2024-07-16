@@ -7,7 +7,7 @@ import Spinner from './components/Spinner/Spinner';
 import useLocalStorage from './components/customHooks/useLocalStorage';
 import SearchBar from './components/SearchBar/SearchBar';
 import ErrorBoundary from './components/ErrorBoundary/ErrorBoundary';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
 function App() {
   const [results, setResults] = useState([]);
@@ -23,11 +23,9 @@ function App() {
   );
   const [simulateError, setSimulateError] = useState(false);
 
-  const { page } = useParams();
   const navigate = useNavigate();
 
-  const initialCurrentPage = parseInt(page ?? '1', 10) || 1;
-  const [currentPage, setCurrentPage] = useState(initialCurrentPage);
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const throwError = () => {
     setSimulateError(true);
@@ -35,17 +33,28 @@ function App() {
   };
 
   useEffect(() => {
+    if (!searchParams.has('page')) {
+      setSearchParams({ ...searchParams, page: '1' });
+    }
+
+    const currentPage = parseInt(searchParams.get('page') ?? '1', 10);
     fetchData(currentPage);
-  }, [currentPage]);
+  }, [searchParams]);
 
   const nextPage = () => {
-    setCurrentPage((current) => current + 1);
-    navigate(`/search/${currentPage}`);
+    const nextPageNumber = parseInt(searchParams.get('page') ?? '1', 10) + 1;
+    const newSearchParams = new URLSearchParams(searchParams.toString());
+    newSearchParams.set('page', String(nextPageNumber));
+
+    navigate(`/?${newSearchParams.toString()}`, { replace: true });
   };
 
   const prevPage = () => {
-    setCurrentPage((current) => Math.max(current - 1, 1));
-    navigate(`/search/${currentPage}`);
+    const prevPageNumber = parseInt(searchParams.get('page') ?? '1', 10) - 1;
+    const newSearchParams = new URLSearchParams(searchParams.toString());
+    newSearchParams.set('page', prevPageNumber.toString());
+
+    navigate(`/?${newSearchParams.toString()}`, { replace: true });
   };
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -101,6 +110,7 @@ function App() {
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
 
+    const currentPage = parseInt(searchParams.get('page') ?? '1', 10);
     fetchData(currentPage);
   };
 
