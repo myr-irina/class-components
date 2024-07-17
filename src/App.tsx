@@ -28,7 +28,6 @@ function App() {
   const navigate = useNavigate();
 
   const [searchParams, setSearchParams] = useSearchParams();
-
   const [totalPages, setTotalPages] = useState(0);
 
   const throwError = () => {
@@ -37,11 +36,17 @@ function App() {
   };
 
   useEffect(() => {
-    if (!searchParams.has('page')) {
-      setSearchParams({ ...searchParams, page: '1' });
+    const params = new URLSearchParams(searchParams);
+    if (!params.has('page')) {
+      params.set('page', '1');
+    }
+    if (!params.has('details')) {
+      params.set('details', '0');
     }
 
-    const currentPage = parseInt(searchParams.get('page') ?? '1', 10);
+    navigate(`/?${params.toString()}`, { replace: true });
+
+    const currentPage = parseInt(params.get('page') ?? '1', 10);
     fetchData(currentPage, setTotalPages);
   }, [searchParams]);
 
@@ -50,6 +55,10 @@ function App() {
     if (nextPageNumber > 0) {
       const newSearchParams = new URLSearchParams(searchParams.toString());
       newSearchParams.set('page', String(nextPageNumber));
+
+      if (!newSearchParams.has('details')) {
+        newSearchParams.set('details', '0');
+      }
 
       navigate(`/?${newSearchParams.toString()}`, { replace: true });
     }
