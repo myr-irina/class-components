@@ -1,6 +1,5 @@
 import './App.css';
 import React, { useEffect, useState } from 'react';
-import ResultsList from './components/ResultsList/ResultsList';
 import { BASE_URL } from './constants';
 import SearchButton from './components/SearchButton/SearchButton';
 import Spinner from './components/Spinner/Spinner';
@@ -10,14 +9,23 @@ import ErrorBoundary from './components/ErrorBoundary/ErrorBoundary';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import PaginationControls from './components/PaginationControls/PaginationControls';
 import { ITEMS_PER_PAGE } from './constants';
+import { useGetPokemonsQuery } from './services/pokemon';
+import PokemonList from './components/PokemonList/PokemonList';
 
 function App() {
-  const [results, setResults] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState({
-    isError: false,
-    errorMessage: '',
+  const { data, isLoading, isError } = useGetPokemonsQuery({
+    limit: 10,
+    offset: 0,
   });
+
+  console.log({ data });
+
+  const [results, setResults] = useState([]);
+  // const [isLoading, setIsLoading] = useState(false);
+  // const [error, setError] = useState({
+  //   isError: false,
+  //   errorMessage: '',
+  // });
 
   const [searchQuery, setSearchQuery] = useLocalStorage<string>(
     undefined,
@@ -35,20 +43,20 @@ function App() {
     throw new Error('Manual error');
   };
 
-  useEffect(() => {
-    const params = new URLSearchParams(searchParams);
-    if (!params.has('page')) {
-      params.set('page', '1');
-    }
-    if (!params.has('details')) {
-      params.set('details', '0');
-    }
+  // useEffect(() => {
+  //   const params = new URLSearchParams(searchParams);
+  //   if (!params.has('page')) {
+  //     params.set('page', '1');
+  //   }
+  //   if (!params.has('details')) {
+  //     params.set('details', '0');
+  //   }
 
-    navigate(`/?${params.toString()}`, { replace: true });
+  //   navigate(`/?${params.toString()}`, { replace: true });
 
-    const currentPage = parseInt(params.get('page') ?? '1', 10);
-    fetchData(currentPage, setTotalPages);
-  }, [searchParams]);
+  //   const currentPage = parseInt(params.get('page') ?? '1', 10);
+  //   fetchData(currentPage, setTotalPages);
+  // }, [searchParams]);
 
   const nextPage = () => {
     const nextPageNumber = parseInt(searchParams.get('page') ?? '1', 10) + 1;
@@ -83,7 +91,6 @@ function App() {
     page: number,
     setPageCount: (count: number) => void,
   ) => {
-    setIsLoading(true);
     setError({ isError: false, errorMessage: '' });
 
     const limit = 10;
@@ -99,14 +106,14 @@ function App() {
 
       const response = await fetch(urlBase);
 
-      if (!response.ok) {
-        if (response.status === 404) {
-          setError({ isError: true, errorMessage: 'No results found' });
-        } else {
-          setError({ isError: true, errorMessage: 'An error occurred' });
-        }
-        return;
-      }
+      // if (!response.ok) {
+      //   if (response.status === 404) {
+      //     setError({ isError: true, errorMessage: 'No results found' });
+      //   } else {
+      //     setError({ isError: true, errorMessage: 'An error occurred' });
+      //   }
+      //   return;
+      // }
 
       const data = await response.json();
 
@@ -123,11 +130,8 @@ function App() {
       setPageCount(pageCount);
 
       setResults(results);
-      setIsLoading(false);
     } catch (error) {
       console.error('Failed to fetch data:', error);
-      setIsLoading(false);
-      setError({ isError: true, errorMessage: 'An error occurred' });
     }
   };
 
@@ -155,15 +159,15 @@ function App() {
           </button>
         </div>
 
-        {error.isError ? (
-          <div className="errorMessage">No results found</div>
+        {isError ? (
+          <div className="errorMessage">Error has occured</div>
         ) : isLoading ? (
           <div className="spinner-container">
             <Spinner />
           </div>
         ) : (
-          <ResultsList
-            results={results}
+          <PokemonList
+            results={data}
             searchQuery={searchQuery}
             nextPage={nextPage}
             prevPage={prevPage}
