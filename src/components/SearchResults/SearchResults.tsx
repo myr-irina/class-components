@@ -1,13 +1,14 @@
-import React from 'react';
 import { Link } from 'react-router-dom';
+import { IPokemonDetails } from '../../types';
 
-function SearchResults() {
+function SearchResults({ data }: { data: IPokemonDetails }) {
   return (
     <>
-      <h2 className="pokemon-name">Name: {displayedResults[0]?.name}</h2>
+      {data !== null && <h2 className="pokemon-name">Name: {data?.name}</h2>}
+
       <ul>
-        {displayedResults[0] &&
-          displayedResults[0].abilities?.map((ability, idx) => (
+        {data &&
+          data.abilities?.map((ability, idx) => (
             <li key={idx}>
               <Link
                 to={`/?details=${ability.ability?.url?.match(/\/(\d+)\/$/)?.[1]}`}

@@ -15,7 +15,14 @@ export const pokemonApi = createApi({
       }),
       transformResponse: (response: IPokemonList) => response.results,
     }),
+
+    getSpecificPokemons: builder.query<IResult[], string>({
+      query: (searchTerm) => ({
+        url: `/pokemon/${searchTerm}`,
+      }),
+    }),
   }),
 });
 
-export const { useGetPokemonsQuery } = pokemonApi;
+export const { useGetPokemonsQuery, useLazyGetSpecificPokemonsQuery } =
+  pokemonApi;

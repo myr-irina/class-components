@@ -54,11 +54,11 @@ const PokemonList = ({ results }: { results: IResult[] }) => {
         })}
       </ul>
 
-      {detailsId && (
+      {/* {detailsId && (
         <div>
           <Details />
         </div>
-      )}
+      )} */}
     </div>
   );
 };
