@@ -9,8 +9,13 @@ import ErrorBoundary from './components/ErrorBoundary/ErrorBoundary';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import PaginationControls from './components/PaginationControls/PaginationControls';
 import { ITEMS_PER_PAGE } from './constants';
-import { useGetPokemonsQuery } from './services/pokemon';
+import {
+  useGetPokemonsQuery,
+  useLazyGetSpecificPokemonsQuery,
+} from './services/pokemon';
 import PokemonList from './components/PokemonList/PokemonList';
+import SearchResults from './components/SearchResults/SearchResults';
+import useDebounce from './components/customHooks/useDebounce';
 
 function App() {
   const { data, isLoading, isError } = useGetPokemonsQuery({
@@ -22,6 +27,19 @@ function App() {
     undefined,
     'searchQuery',
   );
+
+  const debounced = useDebounce(searchQuery);
+
+  useEffect(() => {
+    console.log(searchQuery);
+  }, [searchQuery]);
+
+  const isSearchWithSearchquery = Boolean(debounced);
+
+  const { data, isLoading, isError } = isSearchWithSearchquery
+    ? useLazyGetSpecificPokemonsQuery(debounced)
+    : useGetPokemonsQuery({ limit: 10, offset: 0 });
+
   const [simulateError, setSimulateError] = useState(false);
 
   const navigate = useNavigate();
@@ -128,12 +146,19 @@ function App() {
     const currentPage = parseInt(searchParams.get('page') ?? '1', 10);
     fetchData(currentPage, (pageCount) => setTotalPages(pageCount));
   };
+  if (isLoading) {
+    <div className="spinner-container">
+      <Spinner />
+    </div>;
+  }
 
   if (simulateError) {
     return <p>There is an error occured. Try to reload page.</p>;
   }
 
   const currentPage = parseInt(searchParams.get('page') ?? '1', 10);
+
+  const isArrayResult = Array.isArray(data);
 
   return (
     <ErrorBoundary>
@@ -146,19 +171,15 @@ function App() {
           </button>
         </div>
 
-        {isError ? (
-          <div className="errorMessage">Error has occured</div>
-        ) : isLoading ? (
-          <div className="spinner-container">
-            <Spinner />
-          </div>
-        ) : (
+        {isArrayResult ? (
           <PokemonList
             results={data}
             searchQuery={searchQuery}
             nextPage={nextPage}
             prevPage={prevPage}
           />
+        ) : (
+          <SearchResults data={data} />
         )}
 
         <PaginationControls
