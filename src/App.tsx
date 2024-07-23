@@ -6,7 +6,7 @@ import Spinner from './components/Spinner/Spinner';
 import useLocalStorage from './components/customHooks/useLocalStorage';
 import SearchBar from './components/SearchBar/SearchBar';
 import ErrorBoundary from './components/ErrorBoundary/ErrorBoundary';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Outlet, useNavigate, useSearchParams } from 'react-router-dom';
 import PaginationControls from './components/PaginationControls/PaginationControls';
 import { ITEMS_PER_PAGE } from './constants';
 import {
@@ -14,10 +14,12 @@ import {
   useLazyGetSpecificPokemonsQuery,
 } from './services/pokemon';
 import PokemonList from './components/PokemonList/PokemonList';
-import SearchResults from './components/SearchResults/SearchResults';
 import useDebounce from './components/customHooks/useDebounce';
+import { useAppDispatch } from './store/hooks';
+import { setCurrentPage } from './store/PokemonSlice';
 
 function App() {
+  const dispatch = useAppDispatch();
   const { data, isLoading, isError } = useGetPokemonsQuery({
     limit: 10,
     offset: 0,
@@ -27,6 +29,7 @@ function App() {
     undefined,
     'searchQuery',
   );
+  const [selectedPokemon, setSelectedPokemon] = useState<any>(undefined);
 
   const debounced = useDebounce(searchQuery);
 
@@ -36,9 +39,9 @@ function App() {
 
   const isSearchWithSearchquery = Boolean(debounced);
 
-  const { data, isLoading, isError } = isSearchWithSearchquery
-    ? useLazyGetSpecificPokemonsQuery(debounced)
-    : useGetPokemonsQuery({ limit: 10, offset: 0 });
+  // const { data, isLoading, isError } = isSearchWithSearchquery
+  //   ? useLazyGetSpecificPokemonsQuery(debounced)
+  //   : useGetPokemonsQuery({ limit: 10, offset: 0 });
 
   const [simulateError, setSimulateError] = useState(false);
 
@@ -64,8 +67,9 @@ function App() {
     navigate(`/?${params.toString()}`, { replace: true });
 
     const currentPage = parseInt(params.get('page') ?? '1', 10);
-    fetchData(currentPage, setTotalPages);
-  }, [searchParams]);
+
+    dispatch(setCurrentPage(currentPage));
+  }, [searchParams, navigate, dispatch]);
 
   const nextPage = () => {
     const nextPageNumber = parseInt(searchParams.get('page') ?? '1', 10) + 1;
@@ -170,8 +174,33 @@ function App() {
             Trigger Error
           </button>
         </div>
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}
+        >
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            <PokemonList
+              results={data}
+              searchQuery={searchQuery}
+              nextPage={nextPage}
+              prevPage={prevPage}
+            />
+            <PaginationControls
+              currentPage={currentPage}
+              prevPage={prevPage}
+              nextPage={nextPage}
+              totalPages={totalPages}
+              initialPagesToShow={5}
+            />
+          </div>
+          <Outlet />
+        </div>
+      </div>
 
-        {isArrayResult ? (
+      {/* {isArrayResult ? (
           <PokemonList
             results={data}
             searchQuery={searchQuery}
@@ -180,16 +209,7 @@ function App() {
           />
         ) : (
           <SearchResults data={data} />
-        )}
-
-        <PaginationControls
-          currentPage={currentPage}
-          prevPage={prevPage}
-          nextPage={nextPage}
-          totalPages={totalPages}
-          initialPagesToShow={5}
-        />
-      </div>
+        )} */}
     </ErrorBoundary>
   );
 }

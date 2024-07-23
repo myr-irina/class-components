@@ -28,7 +28,7 @@ function PaginationControls({
     (_, i) => startIndex + i,
   );
   return (
-    <>
+    <div style={{ display: 'flex', gap: '5px', alignItems: 'center' }}>
       <button disabled={currentPage === 1} onClick={() => prevPage()}>
         Previous
       </button>
@@ -50,7 +50,7 @@ function PaginationControls({
       <span>
         Page {currentPage} of {totalPages}
       </span>
-    </>
+    </div>
   );
 }
 

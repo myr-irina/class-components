@@ -38,20 +38,21 @@ const PokemonList = ({ results }: { results: IResult[] }) => {
       }}
     >
       <ul>
-        {results.map((result, index) => {
-          const pokemonId = result.url?.match(/\/(\d+)\/$/)?.[1];
+        {results &&
+          results.map((result, index) => {
+            const pokemonId = result.url?.match(/\/(\d+)\/$/)?.[1];
 
-          return (
-            <li key={index}>
-              <span
-                onClick={() => handlePokemonSelect(pokemonId as string)}
-                style={{ cursor: 'pointer' }}
-              >
-                {result.name} - {result.url}
-              </span>
-            </li>
-          );
-        })}
+            return (
+              <li key={index}>
+                <span
+                  onClick={() => handlePokemonSelect(pokemonId as string)}
+                  style={{ cursor: 'pointer' }}
+                >
+                  {result.name} - {result.url}
+                </span>
+              </li>
+            );
+          })}
       </ul>
 
       {/* {detailsId && (
