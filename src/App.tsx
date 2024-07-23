@@ -15,14 +15,21 @@ import {
 } from './services/pokemon';
 import PokemonList from './components/PokemonList/PokemonList';
 import useDebounce from './components/customHooks/useDebounce';
-import { useAppDispatch } from './store/hooks';
+import { useAppDispatch, useAppSelector } from './store/hooks';
 import { setCurrentPage } from './store/PokemonSlice';
 
 function App() {
   const dispatch = useAppDispatch();
+  const currentPage2 = useAppSelector(
+    (state) => state.pokemonSlice?.currentPage,
+  );
+  const LIMIT = 10;
+  console.log({ currentPage2 });
+  const offset = (currentPage2 - 1) * LIMIT;
+
   const { data, isLoading, isError } = useGetPokemonsQuery({
     limit: 10,
-    offset: 0,
+    offset: offset,
   });
 
   const [searchQuery, setSearchQuery] = useLocalStorage<string>(
@@ -73,6 +80,7 @@ function App() {
 
   const nextPage = () => {
     const nextPageNumber = parseInt(searchParams.get('page') ?? '1', 10) + 1;
+
     if (nextPageNumber > 0) {
       const newSearchParams = new URLSearchParams(searchParams.toString());
       newSearchParams.set('page', String(nextPageNumber));
