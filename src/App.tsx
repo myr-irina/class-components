@@ -18,15 +18,6 @@ function App() {
     offset: 0,
   });
 
-  console.log({ data });
-
-  const [results, setResults] = useState([]);
-  // const [isLoading, setIsLoading] = useState(false);
-  // const [error, setError] = useState({
-  //   isError: false,
-  //   errorMessage: '',
-  // });
-
   const [searchQuery, setSearchQuery] = useLocalStorage<string>(
     undefined,
     'searchQuery',
@@ -43,20 +34,20 @@ function App() {
     throw new Error('Manual error');
   };
 
-  // useEffect(() => {
-  //   const params = new URLSearchParams(searchParams);
-  //   if (!params.has('page')) {
-  //     params.set('page', '1');
-  //   }
-  //   if (!params.has('details')) {
-  //     params.set('details', '0');
-  //   }
+  useEffect(() => {
+    const params = new URLSearchParams(searchParams);
+    if (!params.has('page')) {
+      params.set('page', '1');
+    }
+    if (!params.has('details')) {
+      params.set('details', '0');
+    }
 
-  //   navigate(`/?${params.toString()}`, { replace: true });
+    navigate(`/?${params.toString()}`, { replace: true });
 
-  //   const currentPage = parseInt(params.get('page') ?? '1', 10);
-  //   fetchData(currentPage, setTotalPages);
-  // }, [searchParams]);
+    const currentPage = parseInt(params.get('page') ?? '1', 10);
+    fetchData(currentPage, setTotalPages);
+  }, [searchParams]);
 
   const nextPage = () => {
     const nextPageNumber = parseInt(searchParams.get('page') ?? '1', 10) + 1;
@@ -91,8 +82,6 @@ function App() {
     page: number,
     setPageCount: (count: number) => void,
   ) => {
-    setError({ isError: false, errorMessage: '' });
-
     const limit = 10;
     const offset = (page - 1) * limit;
 
@@ -128,8 +117,6 @@ function App() {
       const totalCount = data.count || 0;
       const pageCount = Math.ceil(totalCount / ITEMS_PER_PAGE);
       setPageCount(pageCount);
-
-      setResults(results);
     } catch (error) {
       console.error('Failed to fetch data:', error);
     }

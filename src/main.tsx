@@ -6,7 +6,7 @@ import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import ErrorPage from './components/ErrorPage/ErrorPage.tsx';
 import Details from './components/Details/Details.tsx';
 import { Provider } from 'react-redux';
-import store from './store/store.ts';
+import { store } from './store/store.ts';
 
 const router = createBrowserRouter([
   {
